@@ -1,10 +1,11 @@
 package com.main.server.controller;
 
+
+import com.main.server.model.request.NewProductRequest;
 import com.main.server.model.response.Response;
 import com.main.server.services.ProductService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,13 +44,28 @@ public class ProductController {
         );
     }
 
-//    @GetMapping("/alll")
-//    public Object getDetail(@Nullable @RequestParam(value = "color") String color) {
+    @GetMapping("/all/filter")
+    public Object getByColor(@Nullable @RequestParam(value = "color") String color) {
+        return ResponseEntity.ok(
+                new Response(
+                        "Successfully to filter products!",
+                        productService.getProductsByColor(color)
+                )
+        );
+    }
+
+//    @GetMapping("/search")
+//    public Object getByKeyword(String keyword) {
 //        return ResponseEntity.ok(
 //                new Response(
-//                        "Successfully to get all products!",
-//                        productService.getProductsByColor(color)
+//                        "Successfully to filter products!",
+//                        productService.getProductsByColor(keyword)
 //                )
 //        );
 //    }
+
+    @PostMapping("/add")
+    public void addNewProduct(@RequestBody NewProductRequest newProduct) {
+        productService.addProduct(newProduct);
+    }
 }

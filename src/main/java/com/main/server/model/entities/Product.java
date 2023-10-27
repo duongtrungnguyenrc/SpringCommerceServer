@@ -24,10 +24,10 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private ETag tag;
 
-    @Column(columnDefinition = "boolean default 0")
+    @Column(columnDefinition = "boolean default 0.0")
     private double basePrice = 0.0;
 
-    @Column(columnDefinition = "boolean default 0")
+    @Column(columnDefinition = "boolean default 0.0")
     private double salePrice = 0.0;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

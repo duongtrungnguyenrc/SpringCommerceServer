@@ -1,10 +1,8 @@
 package com.main.server.model.dto;
 
-import com.main.server.model.entities.ProductColor;
-import com.main.server.model.entities.ProductImage;
-import com.main.server.model.entities.ProductPreserveMethod;
-import com.main.server.model.entities.ProductSize;
+import com.main.server.model.entities.*;
 import com.main.server.model.enumerations.ETag;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,19 +16,19 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDTO {
-    private int productId;
-    private String type;
-    private String productGroup;
-    private String productName;
-    private Date createdTime;
-    private double rated;
+    private int id;
+    private String name;
     private String description;
+    private ETag tag;
     private double basePrice;
     private double salePrice;
     private int inStock;
-    private List<PreserveDTO> preserveMethods;
-    private ETag tag;
-    private List<ProductImageDTO> images;
-    private List<ProductSizeDTO> sizeOptions;
-    private List<ProductColorDTO> ColorOptions;
+    private Collection<ProductUpdateRecord> updateRecords;
+    private Collection<ProductSizeDTO> productSizes;
+    private Collection<PreserveDTO> preserveMethods;
+    private Collection<ProductImageDTO> productImages;
+    private Collection<ProductColorDTO> productColors;
+    private Collection<ProductRatingDTO> productRatings;
+    private ProductGroup group;
+    private ProductModel model;
 }

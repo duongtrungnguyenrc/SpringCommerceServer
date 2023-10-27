@@ -11,13 +11,12 @@ public class ProductSize {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-
     @Column
     private String name;
 
-    @Column
-    private double extraCoefficient;
+    @Column(columnDefinition = "boolean default 0.0")
+    private double extraCoefficient = 0.0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Product product;
 }

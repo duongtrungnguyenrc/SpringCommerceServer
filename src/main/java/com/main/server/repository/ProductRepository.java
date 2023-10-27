@@ -10,8 +10,10 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
-//    @Query("SELECT * FROM product, product_color " +
-//            "WHERE product.id = product_color.product_id and product_color.name like :color " +
-//            "GROUP BY product_color.name")
-//    List<Product> findProductsByProductColors(@Param("color") String productColor);
+    @Query("FROM Product p JOIN p.productColors pc WHERE pc.name LIKE %:color%")
+    List<Product> findProductsByProductColors(@Param("color") String productColor);
+
+    @Query("FROM Product p JOIN p.productSizes pc WHERE pc.name LIKE %:size%")
+    List<Product> findProductsByProductSizes(@Param("size") String productColor);
+
 }
