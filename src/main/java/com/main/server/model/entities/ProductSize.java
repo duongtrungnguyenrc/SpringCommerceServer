@@ -14,7 +14,7 @@ public class ProductSize {
     @Column
     private String name;
 
-    @Column(columnDefinition = "boolean default 0.0")
+    @Column(columnDefinition = "double default 0.0")
     private double extraCoefficient = 0.0;
 
     @ManyToOne

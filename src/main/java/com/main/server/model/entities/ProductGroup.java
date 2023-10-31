@@ -1,5 +1,6 @@
 package com.main.server.model.entities;
 
+import com.main.server.model.enumerations.EType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,12 +14,13 @@ public class ProductGroup {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Collection<ProductCategory> categories;
+
     @Column
     private String name;
 
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Collection<Product> products;
-
-    @ManyToOne
-    private ProductType type;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private EType type;
 }

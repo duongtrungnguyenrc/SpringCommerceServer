@@ -10,7 +10,7 @@ import java.util.Collection;
 public class NewProductRequest {
     private String name;
     private String description;
-    private ETag tag;
+    private String tag;
     private double basePrice;
     private double salePrice;
     private int inStock;
@@ -20,6 +20,6 @@ public class NewProductRequest {
     private Collection<ProductColor> colors;
     private Collection<ProductRating> ratings;
     private String updateDescription;
-    private int group;
+    private int category;
     private int model;
 }

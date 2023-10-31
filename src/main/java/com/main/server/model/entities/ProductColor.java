@@ -17,7 +17,7 @@ public class ProductColor {
     @Column
     private  String src;
 
-    @Column(columnDefinition = "boolean default 0.0")
+    @Column(columnDefinition = "double default 0.0")
     private double extraCoefficient = 0.0;
 
     @ManyToOne

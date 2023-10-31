@@ -24,11 +24,11 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private ETag tag;
 
-    @Column(columnDefinition = "boolean default 0.0")
-    private double basePrice = 0.0;
+    @Column(columnDefinition = "double default 0.0")
+    private Double basePrice = 0.0;
 
-    @Column(columnDefinition = "boolean default 0.0")
-    private double salePrice = 0.0;
+    @Column(columnDefinition = "double default 0.0")
+    private Double salePrice = 0.0;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<ProductUpdateRecord> updateRecords;
@@ -49,7 +49,7 @@ public class Product {
     private Collection<ProductRating> productRatings;
 
     @ManyToOne
-    private ProductGroup group;
+    private ProductCategory category;
 
     @ManyToOne
     private ProductModel model;

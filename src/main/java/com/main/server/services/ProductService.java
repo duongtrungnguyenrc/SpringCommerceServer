@@ -1,14 +1,20 @@
 package com.main.server.services;
 
-import com.main.server.apdapter.ProductAdapter;
+import com.main.server.mapping.ProductColorMapping;
+import com.main.server.mapping.ProductMapping;
 
+import com.main.server.mapping.ProductSizeMapping;
+import com.main.server.model.dto.ProductDTO;
 import com.main.server.model.entities.*;
+import com.main.server.model.enumerations.ETag;
+import com.main.server.model.enumerations.EType;
 import com.main.server.model.request.NewProductRequest;
-import com.main.server.model.response.ProductDetailResponse;
 import com.main.server.repository.*;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -19,44 +25,125 @@ public class ProductService {
     ProductRepository productRepository;
 
     @Autowired
-    ProductGroupRepository productGroupRepository;
+    ProductCategoryRepository productGroupRepository;
 
     @Autowired
     ProductModelRepository productModelRepository;
-    public Map<String, Object> getALlProducts(int page, int limit) {
+
+    @Autowired
+    ProductSizeRepository productSizeRepository;
+
+    @Autowired
+    ProductColorRepository productColorRepository;
+
+    public Map<String, Object> getAllProducts(int page, int limit, String group, String category, @Nullable String color, @Nullable String size, @Nullable String tag, @Nullable String minPrice, @Nullable String maxPrice) {
         Map<String, Object> data = new HashMap<>();
-        data.put("products", productRepository.findAll(PageRequest.of(page - 1, limit)).stream().map(ProductAdapter::bind));
+        Pageable pageable = PageRequest.of(page - 1, limit);
+
+        Page<Product> products = buildDynamicQuery(group, category, color, size, tag, minPrice, maxPrice, pageable);
+
+        data.put("products", products.stream().map(ProductMapping::bind));
         data.put("page", page);
-        data.put("totalPages", Math.round((float) productRepository.count() / limit));
+        data.put("totalPages", (int) Math.ceil((double) products.getTotalElements() / limit));
+
         return data;
     }
 
-    public Map<String, Object> getProductsByColor(@Nullable String color) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("products", productRepository.findProductsByProductColors(color).stream().map(ProductAdapter::bind));
-        return data;
+    private Page<Product> buildDynamicQuery(String group, String category, String color, String size, String tag, String minPrice, String maxPrice, Pageable pageable) {
+        if (color != null) {
+            if (size != null) {
+                if (tag != null) {
+                    if (minPrice != null && maxPrice != null) {
+                        return productRepository.findByColorAndSizeTagAndPrice(
+                                EType.valueOf(group), category, color, size, ETag.valueOf(tag),
+                                Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+                        );
+                    } else {
+                        return productRepository.findByColorAndSizeAndTag(
+                                EType.valueOf(group), category, color, size, ETag.valueOf(tag), pageable
+                        );
+                    }
+                } else if (minPrice != null && maxPrice != null) {
+                    return productRepository.findByColorAndSizeAndPrice(
+                            EType.valueOf(group), category, color, size,
+                            Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+                    );
+                } else {
+                    return productRepository.findByColorAndSize(
+                            EType.valueOf(group), category, color, size, pageable
+                    );
+                }
+            } else if (tag != null) {
+                if (minPrice != null && maxPrice != null) {
+                    return productRepository.findByColorAndTagAndPrice(
+                            EType.valueOf(group), category, color, ETag.valueOf(tag),
+                            Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+                    );
+                } else {
+                    return productRepository.findByColorAndTag(
+                            EType.valueOf(group), category, color, ETag.valueOf(tag), pageable
+                    );
+                }
+            } else if (minPrice != null && maxPrice != null) {
+                return productRepository.findByColorAndRangePrice(
+                        EType.valueOf(group), category, color,
+                        Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+                );
+            } else {
+                return productRepository.findByColor(EType.valueOf(group), category, color, pageable);
+            }
+        } else if (size != null) {
+            if (tag != null) {
+                if (minPrice != null && maxPrice != null) {
+                    return productRepository.findBySizeAndTagAndPrice(
+                            EType.valueOf(group), category, size, ETag.valueOf(tag),
+                            Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+                    );
+                } else {
+                    return productRepository.findBySizeAndTag(
+                            EType.valueOf(group), category, size, ETag.valueOf(tag), pageable
+                    );
+                }
+            } else if (minPrice != null && maxPrice != null) {
+                return productRepository.findBySizeAndRangePrice(
+                        EType.valueOf(group), category, size,
+                        Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+                );
+            } else {
+                return productRepository.findBySize(EType.valueOf(group), category, size, pageable);
+            }
+        } else if (tag != null) {
+            if (minPrice != null && maxPrice != null) {
+                return productRepository.findByTagAndRangePrice(
+                        EType.valueOf(group), category, ETag.valueOf(tag),
+                        Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+                );
+            } else {
+                return productRepository.findByTag(EType.valueOf(group), category, ETag.valueOf(tag), pageable);
+            }
+        } else if (minPrice != null && maxPrice != null) {
+            return productRepository.findByRangePrice(
+                    EType.valueOf(group), category, Double.parseDouble(minPrice), Double.parseDouble(maxPrice), pageable
+            );
+        } else {
+            return productRepository.findByCategory(EType.valueOf(group), category, pageable);
+        }
     }
 
-    public Map<String, Object> getProductsBySize(@Nullable String size) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("products", productRepository.findProductsByProductSizes(size).stream().map(ProductAdapter::bind));
-        return data;
-    }
 
-    public ProductDetailResponse getProductById(int id) {
+    public ProductDTO getProductById(int id) {
         Product product = productRepository.findById(id).orElse(null);
-        return ProductAdapter.bind(product);
+        return ProductMapping.bind(product);
     }
 
-    public void addProduct(NewProductRequest newProduct) {
+    public boolean addProduct(NewProductRequest newProduct) {
         try {
             Product product = new Product();
             product.setName(newProduct.getName());
             product.setDescription(newProduct.getDescription());
             product.setBasePrice(newProduct.getBasePrice());
             product.setSalePrice(newProduct.getSalePrice());
-            product.setTag(newProduct.getTag());
-
+//            product.setTag(ETag.NEW);
             List<ProductSize> productSizes = new ArrayList<>();
             for (ProductSize size : newProduct.getSizes()) {
                 ProductSize productSize = new ProductSize();
@@ -86,8 +173,8 @@ public class ProductService {
             product.setProductColors(productColors);
             product.setProductImages(productImages);
 
-            product.setGroup(productGroupRepository.findById(newProduct.getGroup()).orElse(null));
-            product.setModel(productModelRepository.findById(newProduct.getGroup()).orElse(null));
+            product.setCategory(productGroupRepository.findById(newProduct.getCategory()).orElse(null));
+            product.setModel(productModelRepository.findById(newProduct.getCategory()).orElse(null));
 
             List<ProductUpdateRecord> productUpdateRecords = new ArrayList<>();
             productUpdateRecords.add(
@@ -99,9 +186,18 @@ public class ProductService {
             );
             product.setUpdateRecords(productUpdateRecords);
             productRepository.save(product);
+            return true;
         }
         catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+    }
+
+    public Map<String, Object> getFilterOptions(String category) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("sizes", productSizeRepository.findSizeOptions(category).stream().map(ProductSizeMapping::bind));
+        data.put("colors", productColorRepository.findColorOptions(category).stream().map(ProductColorMapping::bind));
+        return data;
     }
 }
