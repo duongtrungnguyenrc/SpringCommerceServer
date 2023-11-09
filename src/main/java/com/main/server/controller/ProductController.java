@@ -1,13 +1,15 @@
 package com.main.server.controller;
 
 
-import com.main.server.model.enumerations.ETag;
-import com.main.server.model.request.NewProductRequest;
-import com.main.server.model.response.Response;
+import com.main.server.models.request.DeleteProductRequest;
+import com.main.server.models.request.NewProductRequest;
+import com.main.server.models.request.UpdateProductRequest;
+import com.main.server.models.response.Response;
 import com.main.server.services.ProductService;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +20,6 @@ import java.util.List;
 public class ProductController {
     @Autowired
     ProductService productService;
-
     @GetMapping("/all")
     public Object getAll(@RequestParam(value = "page", required = false) Integer page,
                          @RequestParam(value = "limit", required = false) Integer limit,
@@ -54,7 +55,7 @@ public class ProductController {
                 )
         );
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public Object addNewProduct(@RequestBody NewProductRequest newProduct) {
         return ResponseEntity.ok(
@@ -65,17 +66,29 @@ public class ProductController {
         );
     }
 
-    @PostMapping("/addAll")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/add-multiple")
     public Object addNewProducts(@RequestBody List<NewProductRequest> newProducts) {
         newProducts.forEach(newProduct -> {
             productService.addProduct(newProduct);
         });
         return ResponseEntity.ok(
                 new Response(
-                        "Successfully to add all new product!s",
+                        "Successfully to add all new products!",
                         true
                 )
         );
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/update")
+    public Object updateProduct(@RequestBody UpdateProductRequest updateProduct) {
+        return productService.updateProduct(updateProduct);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/delete")
+    public Object deleteProduct(@RequestBody DeleteProductRequest deleteProductRequest) {
+        return productService.deleteProduct(deleteProductRequest.getId());
     }
 
 

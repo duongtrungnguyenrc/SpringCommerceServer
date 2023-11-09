@@ -1,25 +1,25 @@
 package com.main.server.controller;
 
 import com.main.server.models.response.Response;
-import com.main.server.services.ProductGroupService;
+import com.main.server.services.ProductModelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-@CrossOrigin(value = "*", maxAge = 3600)
+@CrossOrigin("*")
 @RestController
-@RequestMapping("/api/product-group")
-public class ProductGroupController {
+@RequestMapping("api/product-model")
+public class ProductModelController {
     @Autowired
-    ProductGroupService productGroupService;
+    ProductModelService productModelService;
     @GetMapping("/all")
-    public Object getAllGroups() {
+    public Object getAllModels() {
         return ResponseEntity.ok(
                 new Response(
-                        "successfully to get all product groups",
-                        productGroupService.getAllGroups()
+                        "Successfully to get all models!",
+                        productModelService.gelAll()
                 )
         );
     }

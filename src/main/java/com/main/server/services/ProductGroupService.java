@@ -1,8 +1,8 @@
 package com.main.server.services;
 
 import com.main.server.mapping.ProductGroupMapping;
-import com.main.server.model.enumerations.EType;
-import com.main.server.repository.ProductGroupRepository;
+import com.main.server.models.enumerations.EType;
+import com.main.server.repositories.ProductGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,8 +1,8 @@
 package com.main.server.mapping;
 
-import com.main.server.model.dto.ProductCategoryDTO;
-import com.main.server.model.dto.ProductGroupDTO;
-import com.main.server.model.entities.ProductGroup;
+import com.main.server.models.dto.ProductCategoryDTO;
+import com.main.server.models.dto.ProductGroupDTO;
+import com.main.server.models.entities.ProductGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,7 @@ public class ProductGroupMapping {
         List<ProductCategoryDTO> productCategories = new ArrayList<>();
         productGroupEntity.getCategories().forEach(category -> {
             ProductCategoryDTO productCategory = new ProductCategoryDTO();
+            productCategory.setId(category.getId());
             productCategory.setName(category.getName());
             productCategories.add(productCategory);
         });

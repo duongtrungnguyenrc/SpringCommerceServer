@@ -1,7 +1,7 @@
 package com.main.server.mapping;
 
-import com.main.server.model.dto.ProductColorDTO;
-import com.main.server.model.entities.ProductColor;
+import com.main.server.models.dto.ProductColorDTO;
+import com.main.server.models.entities.ProductColor;
 
 public class ProductColorMapping {
     public static ProductColorDTO bind(ProductColor colorEntity) {

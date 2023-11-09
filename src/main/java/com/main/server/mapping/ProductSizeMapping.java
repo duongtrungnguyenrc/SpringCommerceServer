@@ -1,7 +1,7 @@
 package com.main.server.mapping;
 
-import com.main.server.model.dto.ProductSizeDTO;
-import com.main.server.model.entities.ProductSize;
+import com.main.server.models.dto.ProductSizeDTO;
+import com.main.server.models.entities.ProductSize;
 
 public class ProductSizeMapping {
     public static ProductSizeDTO bind(ProductSize sizeEntity) {

@@ -4,17 +4,23 @@ import com.main.server.mapping.ProductColorMapping;
 import com.main.server.mapping.ProductMapping;
 
 import com.main.server.mapping.ProductSizeMapping;
-import com.main.server.model.dto.ProductDTO;
-import com.main.server.model.entities.*;
-import com.main.server.model.enumerations.ETag;
-import com.main.server.model.enumerations.EType;
-import com.main.server.model.request.NewProductRequest;
-import com.main.server.repository.*;
+import com.main.server.models.dto.ProductColorDTO;
+import com.main.server.models.dto.ProductDTO;
+import com.main.server.models.dto.ProductImageDTO;
+import com.main.server.models.dto.ProductSizeDTO;
+import com.main.server.models.entities.*;
+import com.main.server.models.enumerations.ETag;
+import com.main.server.models.enumerations.EType;
+import com.main.server.models.request.NewProductRequest;
+import com.main.server.models.request.UpdateProductRequest;
+import com.main.server.models.response.Response;
+import com.main.server.repositories.*;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -36,7 +42,22 @@ public class ProductService {
     @Autowired
     ProductColorRepository productColorRepository;
 
-    public Map<String, Object> getAllProducts(int page, int limit, String group, String category, @Nullable String color, @Nullable String size, @Nullable String tag, @Nullable String minPrice, @Nullable String maxPrice) {
+    @Autowired
+    ProductImageRepository productImageRepository;
+
+    @Autowired
+    ProductCategoryRepository productCategoryRepository;
+
+    public Map<String, Object> getAllProducts(int page,
+                                              int limit,
+                                              String group,
+                                              String category,
+                                              @Nullable String color,
+                                              @Nullable String size,
+                                              @Nullable String tag,
+                                              @Nullable String minPrice,
+                                              @Nullable String maxPrice) {
+
         Map<String, Object> data = new HashMap<>();
         Pageable pageable = PageRequest.of(page - 1, limit);
 
@@ -143,35 +164,26 @@ public class ProductService {
             product.setDescription(newProduct.getDescription());
             product.setBasePrice(newProduct.getBasePrice());
             product.setSalePrice(newProduct.getSalePrice());
-//            product.setTag(ETag.NEW);
+            product.setTag(ETag.valueOf("NEW"));
             List<ProductSize> productSizes = new ArrayList<>();
-            for (ProductSize size : newProduct.getSizes()) {
-                ProductSize productSize = new ProductSize();
-                productSize.setName(size.getName());
-                productSize.setExtraCoefficient(size.getExtraCoefficient());
-                productSize.setProduct(product); // Set the relationship
-                productSizes.add(productSize);
+            for (ProductSizeDTO size : newProduct.getSizes()) {
+                productSizes.add(new ProductSize(null, size.getName(), size.getExtraCoefficient(), product));
             }
             List<ProductColor> productColors = new ArrayList<>();
-            for (ProductColor color : newProduct.getColors()) {
-                ProductColor productColor = new ProductColor();
-                productColor.setName(color.getName());
-                productColor.setSrc(color.getSrc());
-                productColor.setExtraCoefficient(color.getExtraCoefficient());
-                productColor.setProduct(product); // Set the relationship
-                productColors.add(productColor);
+            for (ProductColorDTO color : newProduct.getColors()) {
+                productColors.add(new ProductColor(null, color.getName(), color.getSrc(), color.getExtraCoefficient(), product));
             }
+
             List<ProductImage> productImages = new ArrayList<>();
-            for(ProductImage image : newProduct.getImages()) {
-                ProductImage productImage = new ProductImage();
-                productImage.setName(image.getName());
-                productImage.setSrc(image.getSrc());
-                productImage.setProduct(product);
-                productImages.add(productImage);
+            for(ProductImageDTO image : newProduct.getImages()) {
+                productImages.add(new ProductImage(null, image.getName(), image.getSrc(), product));
             }
+
             product.setProductSizes(productSizes);
             product.setProductColors(productColors);
             product.setProductImages(productImages);
+
+            product.setValid(true);
 
             product.setCategory(productGroupRepository.findById(newProduct.getCategory()).orElse(null));
             product.setModel(productModelRepository.findById(newProduct.getCategory()).orElse(null));
@@ -180,7 +192,7 @@ public class ProductService {
             productUpdateRecords.add(
                     new ProductUpdateRecord(
                             new Date(),
-                            newProduct.getUpdateDescription(),
+                            "thêm mới",
                             product
                     )
             );
@@ -200,4 +212,128 @@ public class ProductService {
         data.put("colors", productColorRepository.findColorOptions(category).stream().map(ProductColorMapping::bind));
         return data;
     }
+
+    public Object updateProduct(UpdateProductRequest updateProduct) {
+        Product currentProduct = productRepository.findById(updateProduct.getId()).orElse(null);
+
+        if(currentProduct != null) {
+            currentProduct.setName(updateProduct.getName());
+            currentProduct.setBasePrice(updateProduct.getBasePrice());
+            currentProduct.setDescription(updateProduct.getDescription());
+            currentProduct.setTag(ETag.valueOf(updateProduct.getTag()));
+            currentProduct.setSalePrice(updateProduct.getSalePrice());
+
+            List<ProductColor> colors = new ArrayList<>();
+            for(ProductColorDTO DTOColor : updateProduct.getColors()) {
+                if(DTOColor.getId() != null) {
+                    ProductColor color = productColorRepository.findById(DTOColor.getId()).orElse(null);
+
+                    assert color != null;
+                    color.setName(DTOColor.getName());
+                    color.setSrc(DTOColor.getSrc());
+                    color.setExtraCoefficient(DTOColor.getExtraCoefficient());
+                    productColorRepository.save(color);
+                }
+                else {
+                    colors.add(new ProductColor(null, DTOColor.getName(), DTOColor.getSrc(), DTOColor.getExtraCoefficient(), currentProduct));
+                }
+            }
+            currentProduct.setProductColors(colors);
+
+            List<ProductSize> sizes = new ArrayList<>();
+            for(ProductSizeDTO DTOSize : updateProduct.getSizes()) {
+               if(DTOSize.getId() != null) {
+                   ProductSize size = productSizeRepository.findById(DTOSize.getId()).orElse(null);
+
+                   assert size != null;
+                   size.setName(DTOSize.getName());
+                   size.setExtraCoefficient(DTOSize.getExtraCoefficient());
+                   productSizeRepository.save(size);
+               }
+               else {
+                   sizes.add(new ProductSize(null, DTOSize.getName(), DTOSize.getExtraCoefficient(), currentProduct));
+               }
+            }
+            currentProduct.setProductSizes(sizes);
+
+            List<ProductImage> images = new ArrayList<>();
+            for(ProductImageDTO DTOImage : updateProduct.getImages()) {
+                if(DTOImage.getId() != null) {
+                    ProductImage image = productImageRepository.findById(DTOImage.getId()).orElse(null);
+
+                    assert image != null;
+                    image.setName(DTOImage.getName());
+                    image.setSrc(DTOImage.getSrc());
+                    productImageRepository.save(image);
+                }
+                else {
+                    images.add(new ProductImage(null, DTOImage.getName(), DTOImage.getSrc(), currentProduct));
+                }
+            }
+            currentProduct.setProductImages(images);
+
+            if(currentProduct.getModel().getId() != updateProduct.getModel()) {
+                ProductModel model = productModelRepository.findById(updateProduct.getModel()).orElse(null);
+                currentProduct.setModel(model);
+            }
+            if(currentProduct.getCategory().getId() != updateProduct.getCategory()){
+                ProductCategory category = productCategoryRepository.findById(updateProduct.getCategory()).orElse(null);
+                currentProduct.setCategory(category);
+            }
+
+            List<ProductUpdateRecord> records = new ArrayList<>(currentProduct.getUpdateRecords().stream().toList());
+            records.add(new ProductUpdateRecord(null, new Date(), updateProduct.getUpdateDescription(), currentProduct));
+
+            currentProduct.setUpdateRecords(records);
+
+            try {
+                productRepository.save(currentProduct);
+                return ResponseEntity.ok(
+                        new Response(
+                                "Cập nhật sản phẩm thành công",
+                                ProductMapping.bind(currentProduct)
+                        )
+                );
+            }
+            catch (Exception e) {
+                return ResponseEntity.badRequest().body(
+                        new Response(
+                                e.getMessage(),
+                                null
+                        )
+                );
+            }
+        }
+        else {
+            return ResponseEntity.badRequest().body(
+                    new Response(
+                            "Không thể cập nhật sản phẩm",
+                            null
+                    )
+            );
+        }
+    }
+
+    public Object deleteProduct(int id) {
+        try {
+            productRepository.deleteById(id);
+            return ResponseEntity.ok(
+                    new Response(
+                            "Xóa sản phẩm thành công!",
+                            true
+                    )
+            );
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(
+                    new Response(
+                            "Xóa sản phẩm thất bại!",
+                            e.getMessage()
+                    )
+            );
+        }
+
+    }
+
 }
+
