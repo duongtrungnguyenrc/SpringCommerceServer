@@ -48,7 +48,8 @@ public class UserDetailsImpl implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 user.getPhone(),
-                authorities);
+                authorities
+        );
     }
 
     @Override

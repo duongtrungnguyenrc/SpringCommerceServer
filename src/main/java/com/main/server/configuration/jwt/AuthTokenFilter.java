@@ -31,7 +31,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            String jwt = parseJwt(request);
+            String jwt = parseToken(request);
             if (jwt != null && jwtUtils.verify(jwt)) {
                 String username = jwtUtils.getTokenPayload(jwt);
 
@@ -52,7 +52,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String parseJwt(HttpServletRequest request) {
+    private String parseToken(HttpServletRequest request) {
+
         String headerAuth = request.getHeader("Token");
 
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {

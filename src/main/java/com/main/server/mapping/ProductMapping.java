@@ -33,24 +33,33 @@ public class ProductMapping {
         productDTO.setPreserveMethods(preserveMethods);
 
         List<ProductImageDTO> productImages = new ArrayList<>();
-        product.getProductImages().forEach(item -> {
-            productImages.add(new ProductImageDTO(item.getId(), item.getName(), item.getSrc()));
+        product.getProductImages().forEach(image -> {
+            productImages.add(new ProductImageDTO(image.getId(), image.getName(), image.getSrc()));
         });
         productDTO.setImages(productImages);
 
         List<ProductSizeDTO> productSizes = new ArrayList<>();
-        product.getProductSizes().forEach(item -> {
-            productSizes.add(new ProductSizeDTO(item.getId(), item.getName(), item.getExtraCoefficient()));
+        product.getProductSizes().forEach(size -> {
+            productSizes.add(new ProductSizeDTO(size.getId(), size.getName(), size.getExtraCoefficient()));
         });
         productDTO.setSizes(productSizes);
 
         List<ProductColorDTO> productColors = new ArrayList<>();
-        product.getProductColors().forEach(item -> {
-            productColors.add(new ProductColorDTO(item.getId(), item.getName(), item.getSrc(), item.getExtraCoefficient()));
+        product.getProductColors().forEach(color -> {
+            productColors.add(new ProductColorDTO(color.getId(), color.getName(), color.getSrc(), color.getExtraCoefficient()));
         });
         productDTO.setColors(productColors);
-        productDTO.setModel(new ProductModelDTO(product.getModel().getId(), product.getModel().getHeight(), product.getModel().getWeight(), product.getModel().getThreeRoundMeasurements()));
 
+        List<ProductUpdateRecordDTO> updateRecords = new ArrayList<>();
+        product.getUpdateRecords().forEach(record -> {
+            updateRecords.add(new ProductUpdateRecordDTO(record.getId(), (Date) record.getTime(), record.getDescription()));
+        });
+
+        productDTO.setUpdateRecords(updateRecords);
+
+        if(product.getModel() != null) {
+            productDTO.setModel(new ProductModelDTO(product.getModel().getId(), product.getModel().getHeight(), product.getModel().getWeight(), product.getModel().getThreeRoundMeasurements()));
+        }
         return productDTO;
     }
 
@@ -63,10 +72,6 @@ public class ProductMapping {
             totalStar += (double) rating.getStar();
         }
         return (Double) (totalStar / ratings.size());
-    }
-
-    private static void generateTag() {
-
     }
 
 }

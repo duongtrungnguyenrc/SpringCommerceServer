@@ -15,12 +15,13 @@ public class InvoiceMapping {
             InvoiceDTO invoice = new InvoiceDTO();
             invoice.setId(invoiceEntity.getId());
             invoice.setTime(invoiceEntity.getTime());
-            invoice.setSumPrice(invoiceEntity.getSumPrice());
+            invoice.setStatus(invoiceEntity.getStatus().toString());
             List<ProductDTO> products = new ArrayList<>();
             for (Product product : invoiceEntity.getProducts()) {
                 products.add(ProductMapping.bind(product));
             }
             invoice.setProducts(products);
+            invoice.setPrice(products.stream().mapToDouble(ProductDTO::getSalePrice).sum());
             invoice.setUser(invoiceEntity.getUser());
 
             return invoice;

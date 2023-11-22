@@ -10,7 +10,8 @@ import java.util.List;
 public class InvoiceDTO {
     private int id;
     private Date time;
-    private double sumPrice;
+    private String status;
+    private Double price;
     private List<ProductDTO> products;
     private User user;
 }

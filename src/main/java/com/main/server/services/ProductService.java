@@ -48,20 +48,27 @@ public class ProductService {
     @Autowired
     ProductCategoryRepository productCategoryRepository;
 
-    public Map<String, Object> getAllProducts(int page,
-                                              int limit,
-                                              String group,
-                                              String category,
-                                              @Nullable String color,
-                                              @Nullable String size,
-                                              @Nullable String tag,
-                                              @Nullable String minPrice,
-                                              @Nullable String maxPrice) {
+    public Map<String, Object> getAll(int page,
+                                      int limit,
+                                      @Nullable String group,
+                                      @Nullable String category,
+                                      @Nullable String color,
+                                      @Nullable String size,
+                                      @Nullable String tag,
+                                      @Nullable String minPrice,
+                                      @Nullable String maxPrice) {
 
         Map<String, Object> data = new HashMap<>();
         Pageable pageable = PageRequest.of(page - 1, limit);
 
-        Page<Product> products = buildDynamicQuery(group, category, color, size, tag, minPrice, maxPrice, pageable);
+        Page<Product> products;
+
+        if(group == null || group.isEmpty() || category == null || category.isEmpty()) {
+            products = productRepository.findByCategory(pageable);
+        }
+        else {
+            products = buildDynamicQuery(group, category, color, size, tag, minPrice, maxPrice, pageable);
+        }
 
         data.put("products", products.stream().map(ProductMapping::bind));
         data.put("page", page);
@@ -151,13 +158,89 @@ public class ProductService {
         }
     }
 
+    public Object getSpecialProductsByTag(String tag) {
+        try {
+            List<Object> data = new ArrayList<>();
+            Arrays.stream(EType.values()).toList().forEach(type -> {
+                Map<String, Object> dataByType = new HashMap<>();
+                dataByType.put("type", type.toString());
+                dataByType.put("products", productRepository.findByTag(ETag.valueOf(tag), type, PageRequest.of(1, 10)).stream().map(ProductMapping::bind));
+                data.add(dataByType);
+            });
 
+            return ResponseEntity.ok(
+                    new Response(
+                            "Lấy dữ liệu thành công",
+                            data
+                    )
+            );
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(
+                    new Response(
+                            "Lấy dữ liệu thất bại: " + e.getMessage(),
+                            null
+                    )
+            );
+        }
+    }
     public ProductDTO getProductById(int id) {
         Product product = productRepository.findById(id).orElse(null);
         return ProductMapping.bind(product);
     }
 
-    public boolean addProduct(NewProductRequest newProduct) {
+    public ResponseEntity<Response> addProduct(NewProductRequest newProduct) {
+        try {
+            Product productEntity = generateEntity(newProduct);
+            Product savedProduct = productRepository.save(productEntity);
+            return ResponseEntity.ok(
+                    new Response(
+                            "thêm sản phẩm thành công",
+                            savedProduct
+                    )
+            );
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new Response(
+                            "thêm sản phẩm thất bại: " + e.getMessage(),
+                            null
+                    )
+            );
+        }
+    }
+
+    public ResponseEntity<Response> addProducts(List<NewProductRequest> newProducts) {
+        List<Product> products = new ArrayList<>();
+        for (NewProductRequest newProduct : newProducts ){
+            try {
+                Product productEntity = generateEntity(newProduct);
+                products.add(productEntity);
+            }
+            catch (Exception e) {
+
+            }
+        }
+        try {
+            List<Product> savedProducts = productRepository.saveAll(products);
+            return ResponseEntity.ok(
+                    new Response(
+                            "thêm sản phẩm thành công",
+                            savedProducts
+                    )
+            );
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new Response(
+                            "thêm sản phẩm thất bại: " + e.getMessage(),
+                            null
+                    )
+            );
+        }
+    }
+
+    private Product generateEntity(NewProductRequest newProduct) throws Exception{
         try {
             Product product = new Product();
             product.setName(newProduct.getName());
@@ -197,19 +280,24 @@ public class ProductService {
                     )
             );
             product.setUpdateRecords(productUpdateRecords);
-            productRepository.save(product);
-            return true;
+            return product;
+
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            throw new Exception(e);
         }
     }
 
-    public Map<String, Object> getFilterOptions(String category) {
+    public Map<String, Object> getFilterOptions(@Nullable String category, @Nullable String group) {
         Map<String, Object> data = new HashMap<>();
-        data.put("sizes", productSizeRepository.findSizeOptions(category).stream().map(ProductSizeMapping::bind));
-        data.put("colors", productColorRepository.findColorOptions(category).stream().map(ProductColorMapping::bind));
+        if(category != null && !category.isEmpty() && group != null && !group.isEmpty()) {
+            data.put("sizes", productSizeRepository.findSizesByCategory(category, EType.valueOf(group)).stream().map(ProductSizeMapping::bind));
+            data.put("colors", productColorRepository.findColorOptions(category, EType.valueOf(group)).stream().map(ProductColorMapping::bind));
+        }
+        else {
+            data.put("sizes", productSizeRepository.findSizesByCategory().stream().map(ProductSizeMapping::bind));
+            data.put("colors", productColorRepository.findColorOptions().stream().map(ProductColorMapping::bind));
+        }
         return data;
     }
 

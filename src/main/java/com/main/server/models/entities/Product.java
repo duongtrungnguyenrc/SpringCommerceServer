@@ -57,11 +57,6 @@ public class Product {
     @ManyToOne
     private ProductModel model;
 
-    @ManyToMany
-    @JoinTable(
-            name = "product_invoice",
-            joinColumns = @JoinColumn(name = "productId"),
-            inverseJoinColumns = @JoinColumn(name = "invoiceId")
-    )
+    @ManyToMany(mappedBy = "products")
     private Collection<Invoice> invoices;
 }

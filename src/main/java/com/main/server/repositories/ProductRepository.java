@@ -18,6 +18,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("FROM Product p JOIN p.category c WHERE c.group.type = :group AND c.name LIKE %:category% AND p.isValid = true")
     Page<Product> findByCategory(@Param("group") EType group, @Param("category") String category, @Nullable Pageable pageable);
 
+    @Query("FROM Product p JOIN p.category c WHERE c.id = 1 AND p.isValid = true")
+    Page<Product> findByCategory(@Nullable Pageable pageable);
+
 
     ////////////////////
 
@@ -44,6 +47,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
                             @Param("tag") ETag tag,
                             @Nullable Pageable pageable);
 
+    @Query("FROM Product p WHERE p.tag = :tag AND p.category.group.type = :type ORDER BY RAND()")
+    Page<Product> findByTag(@Param("tag") ETag tag, @Param("type") EType type, Pageable pageable);
 
 
     ////////////////////
@@ -145,5 +150,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Modifying
     @Query("UPDATE Product p SET p.isValid = false WHERE p.id = :id")
     void deleteById(@Param("id") int id);
+
 }
 
