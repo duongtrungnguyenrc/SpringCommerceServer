@@ -11,10 +11,10 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table
+@Table(name = "orders")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Invoice {
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -28,8 +28,8 @@ public class Invoice {
 
     @ManyToMany
     @JoinTable(
-            name = "productInvoice",
-            joinColumns = @JoinColumn(name = "invoiceId"),
+            name = "productOrder",
+            joinColumns = @JoinColumn(name = "orderId"),
             inverseJoinColumns = @JoinColumn(name = "productId")
     )
     private Collection<Product> products;

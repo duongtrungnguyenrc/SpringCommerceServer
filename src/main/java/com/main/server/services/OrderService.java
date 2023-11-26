@@ -1,17 +1,15 @@
 package com.main.server.services;
 
 import com.main.server.configuration.security.services.UserDetailsImpl;
-import com.main.server.mapping.InvoiceMapping;
-import com.main.server.mapping.ProductMapping;
-import com.main.server.models.dto.InvoiceDTO;
-import com.main.server.models.entities.Invoice;
+import com.main.server.mapping.OrderMapping;
+import com.main.server.models.entities.Order;
 import com.main.server.models.entities.Product;
 import com.main.server.models.entities.User;
 import com.main.server.models.enumerations.EOrderStatus;
 import com.main.server.models.request.ConfirmOrderRequest;
 import com.main.server.models.request.CreateOrderRequest;
 import com.main.server.models.response.Response;
-import com.main.server.repositories.InvoiceRepository;
+import com.main.server.repositories.OrderRepository;
 import com.main.server.repositories.ProductRepository;
 import com.main.server.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,7 @@ import java.util.*;
 @Service
 public class OrderService {
     @Autowired
-    InvoiceRepository invoiceRepository;
+    OrderRepository orderRepository;
 
     @Autowired
     UserRepository userRepository;
@@ -38,9 +36,9 @@ public class OrderService {
     public Object getAll(int page, int limit) {
        try {
            Pageable pageable = PageRequest.of(page, limit);
-           Page<Invoice> invoices = invoiceRepository.findAll(pageable);
+           Page<Order> invoices = orderRepository.findAll(pageable);
            Map<String, Object> data = new HashMap<>();
-           data.put("orders", invoiceRepository.findAll().stream().map(InvoiceMapping::bind).toList());
+           data.put("orders", orderRepository.findAll().stream().map(OrderMapping::bind).toList());
            data.put("page", page);
            data.put("totalPages", (int) Math.ceil((double) invoices.getTotalElements() / limit));
 
@@ -72,7 +70,7 @@ public class OrderService {
             });
 
             try {
-                Invoice invoice = invoiceRepository.save(new Invoice(null, new Date(), EOrderStatus.PENDING, products, user));
+                Order order = orderRepository.save(new Order(null, new Date(), EOrderStatus.PENDING, products, user));
                 return ResponseEntity.ok(
                         new Response(
                                 "Tạo đơn hàng thành công",
@@ -99,14 +97,14 @@ public class OrderService {
     }
 
     public Object confirm(ConfirmOrderRequest confirmOrderRequest) {
-        Invoice invoice = invoiceRepository.findById(confirmOrderRequest.getOrderId()).orElse(null);
-        if(invoice != null) {
-            switch (invoice.getStatus()) {
-                case PENDING -> invoice.setStatus(EOrderStatus.TRANSPORTING);
-                case TRANSPORTING -> invoice.setStatus(EOrderStatus.COMPLETED);
+        Order order = orderRepository.findById(confirmOrderRequest.getOrderId()).orElse(null);
+        if(order != null) {
+            switch (order.getStatus()) {
+                case PENDING -> order.setStatus(EOrderStatus.TRANSPORTING);
+                case TRANSPORTING -> order.setStatus(EOrderStatus.COMPLETED);
             }
             try {
-                invoiceRepository.save(invoice);
+                orderRepository.save(order);
                 return ResponseEntity.ok(
                         new Response(
                                 "Cập nhật trạng thái đơn hàng thành công",
@@ -132,11 +130,11 @@ public class OrderService {
     }
 
     public Object reject(ConfirmOrderRequest confirmOrderRequest) {
-        Invoice invoice = invoiceRepository.findById(confirmOrderRequest.getOrderId()).orElse(null);
-        if(invoice != null) {
-            invoice.setStatus(EOrderStatus.REJECTED);
+        Order order = orderRepository.findById(confirmOrderRequest.getOrderId()).orElse(null);
+        if(order != null) {
+            order.setStatus(EOrderStatus.REJECTED);
             try {
-                invoiceRepository.save(invoice);
+                orderRepository.save(order);
                 return ResponseEntity.ok(
                         new Response(
                                 "Cập nhật trạng thái đơn hàng thành công",

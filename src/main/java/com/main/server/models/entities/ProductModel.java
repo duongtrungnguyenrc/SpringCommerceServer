@@ -14,6 +14,9 @@ public class ProductModel {
     private int id;
 
     @Column
+    private String name;
+
+    @Column
     private String height;
 
     @Column

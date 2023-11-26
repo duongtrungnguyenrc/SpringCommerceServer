@@ -8,6 +8,7 @@ public class ProductModelMapping {
         ProductModelDTO model = new ProductModelDTO();
 
         model.setId(modelEntity.getId());
+        model.setName(modelEntity.getName());
         model.setHeight(modelEntity.getHeight());
         model.setWeight(modelEntity.getWeight());
         model.setThreeRoundMeasurements(modelEntity.getThreeRoundMeasurements());

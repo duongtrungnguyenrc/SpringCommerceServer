@@ -196,11 +196,13 @@ public class ProductService {
             return ResponseEntity.ok(
                     new Response(
                             "thêm sản phẩm thành công",
-                            savedProduct
+                            ProductMapping.bind(savedProduct)
                     )
             );
         }
         catch (Exception e) {
+            e.printStackTrace();
+
             return ResponseEntity.badRequest().body(
                     new Response(
                             "thêm sản phẩm thất bại: " + e.getMessage(),
@@ -316,47 +318,52 @@ public class ProductService {
                 if(DTOColor.getId() != null) {
                     ProductColor color = productColorRepository.findById(DTOColor.getId()).orElse(null);
 
-                    assert color != null;
-                    color.setName(DTOColor.getName());
-                    color.setSrc(DTOColor.getSrc());
-                    color.setExtraCoefficient(DTOColor.getExtraCoefficient());
-                    productColorRepository.save(color);
-                }
-                else {
-                    colors.add(new ProductColor(null, DTOColor.getName(), DTOColor.getSrc(), DTOColor.getExtraCoefficient(), currentProduct));
+                    if(color != null && color.getProduct().getId() == currentProduct.getId()) {
+                        color.setName(DTOColor.getName());
+                        color.setSrc(DTOColor.getSrc());
+                        color.setExtraCoefficient(DTOColor.getExtraCoefficient());
+                        productColorRepository.save(color);
+                    }
+                    else {
+                        colors.add(new ProductColor(null, DTOColor.getName(), DTOColor.getSrc(), DTOColor.getExtraCoefficient(), currentProduct));
+                    }
                 }
             }
             currentProduct.setProductColors(colors);
 
             List<ProductSize> sizes = new ArrayList<>();
             for(ProductSizeDTO DTOSize : updateProduct.getSizes()) {
-               if(DTOSize.getId() != null) {
-                   ProductSize size = productSizeRepository.findById(DTOSize.getId()).orElse(null);
+                if (DTOSize.getId() != null) {
+                    ProductSize size = productSizeRepository.findById(DTOSize.getId()).orElse(null);
 
-                   assert size != null;
-                   size.setName(DTOSize.getName());
-                   size.setExtraCoefficient(DTOSize.getExtraCoefficient());
-                   productSizeRepository.save(size);
-               }
-               else {
-                   sizes.add(new ProductSize(null, DTOSize.getName(), DTOSize.getExtraCoefficient(), currentProduct));
-               }
+                    if(size != null && size.getProduct().getId() == currentProduct.getId()) {
+
+                        size.setName(DTOSize.getName());
+                        size.setExtraCoefficient(DTOSize.getExtraCoefficient());
+                        productSizeRepository.save(size);
+                    }
+                    else {
+                        sizes.add(new ProductSize(null, DTOSize.getName(), DTOSize.getExtraCoefficient(), currentProduct));
+                    }
+                }
             }
             currentProduct.setProductSizes(sizes);
 
             List<ProductImage> images = new ArrayList<>();
             for(ProductImageDTO DTOImage : updateProduct.getImages()) {
-                if(DTOImage.getId() != null) {
+                if (DTOImage.getId() != null) {
                     ProductImage image = productImageRepository.findById(DTOImage.getId()).orElse(null);
 
-                    assert image != null;
-                    image.setName(DTOImage.getName());
-                    image.setSrc(DTOImage.getSrc());
-                    productImageRepository.save(image);
+                    if (image != null && image.getProduct().getId() == currentProduct.getId()) {
+                        image.setName(DTOImage.getName());
+                        image.setSrc(DTOImage.getSrc());
+                        productImageRepository.save(image);
+                    }
+                    else {
+                        images.add(new ProductImage(null, DTOImage.getName(), DTOImage.getSrc(), currentProduct));
+                    }
                 }
-                else {
-                    images.add(new ProductImage(null, DTOImage.getName(), DTOImage.getSrc(), currentProduct));
-                }
+
             }
             currentProduct.setProductImages(images);
 

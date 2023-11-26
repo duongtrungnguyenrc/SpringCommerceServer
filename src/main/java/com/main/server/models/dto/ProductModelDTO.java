@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductModelDTO {
     private int id;
+    private String name;
     private String height;
     private String weight;
     private String threeRoundMeasurements;

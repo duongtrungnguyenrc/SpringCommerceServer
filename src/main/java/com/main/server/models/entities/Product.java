@@ -58,5 +58,5 @@ public class Product {
     private ProductModel model;
 
     @ManyToMany(mappedBy = "products")
-    private Collection<Invoice> invoices;
+    private Collection<Order> orders;
 }

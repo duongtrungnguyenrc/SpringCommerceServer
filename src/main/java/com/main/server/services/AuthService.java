@@ -2,7 +2,6 @@ package com.main.server.services;
 
 import com.main.server.configuration.jwt.JwtUtils;
 import com.main.server.configuration.security.services.UserDetailsImpl;
-import com.main.server.models.entities.Role;
 import com.main.server.models.entities.User;
 import com.main.server.models.enumerations.EGender;
 import com.main.server.models.enumerations.ERole;
@@ -10,7 +9,6 @@ import com.main.server.models.request.LoginRequest;
 import com.main.server.models.request.SignUpRequest;
 import com.main.server.models.response.LoginResponse;
 import com.main.server.models.response.Response;
-import com.main.server.repositories.RoleRepository;
 import com.main.server.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +27,6 @@ public class AuthService{
 
     @Autowired
     UserRepository userRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
 
     @Autowired
     PasswordEncoder encoder;
@@ -55,11 +50,10 @@ public class AuthService{
             );
 
             if(signUpRequest.getRole() != null && !signUpRequest.getRole().isEmpty()) {
-                Role role = roleRepository.findByName(ERole.valueOf(signUpRequest.getRole()));
-                user.setRole(role);
+                user.setRole(ERole.valueOf(signUpRequest.getRole()));
             }
             else {
-                user.setRole(roleRepository.findByName(ERole.ROLE_USER));
+                user.setRole(ERole.ROLE_USER);
             }
 
             try {

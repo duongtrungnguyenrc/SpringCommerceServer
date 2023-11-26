@@ -2,6 +2,7 @@ package com.main.server.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.main.server.models.enumerations.EGender;
+import com.main.server.models.enumerations.ERole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,8 +43,9 @@ public class User {
     @JsonIgnore
     private String password;
 
-    @ManyToOne
-    private Role role;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ERole role;
 
     public User(String name, Date birth, EGender gender, String phone, String address, String email, String password) {
         this.name = name;
