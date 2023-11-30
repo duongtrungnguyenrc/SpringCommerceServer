@@ -85,7 +85,10 @@ Method 2: Start application with IDE by running ServerApplication containing mai
     - Flexible development environment: Allows independent development of front-end and back-end by separate teams, increasing flexibility and development speed.
     - Performance optimization: Using ReactJS and Spring Boot can optimize application performance with a flexible user interface and powerful APIs.
     - The combination of ReactJS and Spring Boot facilitates the development of high-performance applications that are easily maintainable and scalable, offering users an excellent experience and robust server-side logic handling.
-      
+    
+- Entity relationship diagram:
+<img width="982" alt="Screenshot 2023-12-01 at 01 50 43" src="https://github.com/duongtrungnguyenrc/SpringCommerceServer/assets/111481047/3d9bb036-cb21-4629-966f-dc7bd72eb3b8">
+
 ---
 ***
 
